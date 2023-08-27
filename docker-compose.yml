@@ -1,0 +1,61 @@
+version: "3"
+
+services:
+  storage:
+    container_name: storage
+    image: amazon/dynamodb-local:2.0.0
+    hostname: dynamodb
+    command: -jar DynamoDBLocal.jar -sharedDb -dbPath /app/dynamodb_data
+    user: root
+    ports:
+      - "8000:8000"
+    volumes:
+      - dynamodb_data:/app/dynamodb_data
+
+  transactor:
+    container_name: transactor
+    build: transactor
+    environment:
+      - AWS_ACCESS_KEY_ID=dummy
+      - AWS_SECRET_KEY=dummy
+    ports:
+      - "4336:4336"
+      - "4335:4335"
+      - "4334:4334"
+    volumes:
+      - ./dev-transactor.properties:/opt/datomic-pro/config/dev-transactor.properties
+    image: datomic-pro-base
+    links:
+      - storage
+
+  # datomicpro-console:
+  #   container_name: datomicpro-console
+  #   depends_on:
+  #     - datomicdb
+  #   build: datomicpro-console
+  #   environment:
+  #     - AWS_ACCESS_KEY_ID=dummy
+  #     - AWS_SECRET_KEY=dummy
+  #   ports:
+  #     - "9000:9000"
+  #   links:
+  #     - storage
+  #     - datomicdb
+
+  # datomicpro-test:
+  #   container_name: datomicpro-test
+  #   build:
+  #     context: ./
+  #   env_file:
+  #     - .env
+  #   volumes:
+  #     - .:/app
+  #     - maven:/root/.m2
+  #     - ~/.aws:/root/.aws:ro
+  #     - ~/.clojure:/root/.clojure:ro
+  #   ports:
+  #     - "${REPL_PORT}:${REPL_PORT}"
+
+volumes:
+  maven:
+  dynamodb_data:

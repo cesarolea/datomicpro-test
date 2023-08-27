@@ -1,0 +1,60 @@
+* Provisioning local storage
+
+#+begin_src sh
+docker-compose run --build transactor /opt/datomic-pro/bin/datomic ensure-transactor /opt/datomic-pro/config/dev-transactor.properties /opt/datomic-pro/config/dev-transactor.properties
+#+end_src
+
+It should output:
+
+#+begin_src clojure
+{:success "/opt/datomic-pro/config/dev-transactor.properties"}
+#+end_src
+
+A DynamoDB table with the name ~datomicpro-test~ will be created in the local DynamoDB service
+
+* Connection string
+
+A connection string for a local DynamoDB provisioning storage looks like this:
+
+~datomic:ddb-local://localhost:8000/datomicpro-test/hello?aws_access_key_id=dummy&aws_secret_key=dummy~
+
+Let's dissect each part:
+
+- ~datomic:ddb-local~: A datomic system using DynamoDB local as storage. An AWS-backed DynamoDB would use ~datomic:ddb~ instead.
+- ~localhost:8000~: Where to reach DynamoDB local. It has to match your Docker configuration.
+- ~datomicpro-test~: The name of the DynamoDB table.
+- ~hello~: Name of the *Datomic* database to use or create. Replace with ~*~ when listing all databases.
+- ~?aws_access_key_id=dummy&aws_secret_key=dummy~: Dummy AWS credentials to use, needed when using DynamoDB local.
+
+* Tests
+
+Before each test:
+
+- All containers stopped
+- DynamoDB volume removed
+- Transactor table recreated (see above)
+
+** DONE Remove alt-host
+CLOSED: [2023-08-27 Sun 10:05]
+- Note taken on [2023-08-27 Sun 10:05] \\
+  Create db: pass, list db: pass, tx: pass
+
+** DONE Use anything else as alt-host
+CLOSED: [2023-08-27 Sun 10:09]
+- Note taken on [2023-08-27 Sun 10:09] \\
+  Create db: pass, list db: pass, tx: pass
+
+** DONE Use localhost as alt-host
+CLOSED: [2023-08-27 Sun 10:12]
+- Note taken on [2023-08-27 Sun 10:12] \\
+  Create db: pass, list db: pass, tx: pass
+
+** DONE Use a bogus dynamodb override endpoint
+CLOSED: [2023-08-27 Sun 10:13]
+- Note taken on [2023-08-27 Sun 10:13] \\
+  Can't provision storage: failure to ensure-transactor
+
+* COMMENT :noexport:
+# Local Variables:
+# eval: (visual-line-mode t)
+# End:
