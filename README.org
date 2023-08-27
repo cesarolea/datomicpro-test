@@ -122,25 +122,8 @@ Connect to the running REPL and you're ready to use datomic. Alternatively you c
   ;; => #{["The Goonies" 1985 "action/adventure"] ["Commando" 1985 "action/adventure"]}
 #+end_src
 
-* How it works / Hacking on it
-
-* Connection string
-
-A connection string for a local DynamoDB provisioning storage looks like this:
-
-~datomic:ddb-local://localhost:8000/datomicpro-test/hello?aws_access_key_id=dummy&aws_secret_key=dummy~
-
-Let's dissect each part:
-
-- ~datomic:ddb-local~: A datomic system using DynamoDB local as storage. An AWS-backed DynamoDB would use ~datomic:ddb~ instead.
-- ~localhost:8000~: Where to reach DynamoDB local. It has to match your Docker configuration.
-- ~datomicpro-test~: The name of the DynamoDB table.
-- ~hello~: Name of the *Datomic* database to use or create. Replace with ~*~ when listing all databases.
-- ~?aws_access_key_id=dummy&aws_secret_key=dummy~: Dummy AWS credentials to use, needed when using DynamoDB local.
-
-* Datomic console
-
-Run the ~datomic-console~ container to run the console server:
+** Datomic Console
+The [[https://docs.datomic.com/pro/other-tools/console.html][Datomic Console]] is also included. In can be executed as a separate service and accessed locally through your browser. To run the service:
 
 #+begin_src sh
 docker-compose up datomic-console
@@ -155,3 +138,47 @@ datomic-console  | Open http://localhost:9000/browse in your browser (Chrome rec
 #+end_example
 
 The datomic console should be available at ~http://localhost:9000/browse~.
+
+* How it works / Hacking on it
+The system is composed of three services specified, each in its own Docker container (see ~docker-compose.yml~):
+
+1. ~storage~: Local DynamoDB instance. Binds to port ~8000~.
+2. ~transactor~: The Datomic Pro transactor. Binds to port ~4334~.
+3. ~datomic-console~: The Datomic Console. Binds to port ~9000~.
+
+The Peer is embedded in your own code, running locally. Each service can discover each other using the Docker network.
+
+The transactor is configured to bind to ~0.0.0.0~ and with ~alt-host=transactor~. The ~alt-host~ setting is needed so that the console works correctly. Failing to set the ~alt-host~ correctly will cause the console to throw an exception when selecting a database:
+
+#+begin_example
+datomic-console  | ActiveMQNotConnectedException[errorType=NOT_CONNECTED message=AMQ219007: Cannot connect to server(s). Tried with all available servers.]
+#+end_example
+
+** Transactor configuration
+
+The file ~dev-transactor.properties~ is used by the transactor. See the ~volumes~ section in the transactor service definition:
+
+#+begin_src yaml
+    volumes:
+      - ./dev-transactor.properties:/opt/datomic-pro/config/dev-transactor.properties
+#+end_src
+
+** Connection strings
+
+A connection string for a local DynamoDB provisioned storage looks like this:
+
+~datomic:ddb-local://localhost:8000/datomicpro-test/foo?aws_access_key_id=dummy&aws_secret_key=dummy~
+
+Dissecting each part:
+
+- ~datomic:ddb-local~: A datomic system using DynamoDB local as storage. An AWS-backed DynamoDB would use ~datomic:ddb~ instead.
+- ~localhost:8000~: Where to reach DynamoDB local. It has to match your Docker configuration.
+- ~datomicpro-test~: The name of the DynamoDB table.
+- ~foo~: Name of the *Datomic* database to use or create. Replace with ~*~ when listing all databases.
+- ~?aws_access_key_id=dummy&aws_secret_key=dummy~: Dummy AWS credentials to use, needed when using DynamoDB local.
+
+When in a REPL session, the connection string specifies ~localhost~ as endpoint. This is because our code is running locally and the storage service binds itself to ~localhost:8000~.
+
+However the console is running inside a docker container. There, the storage service is reachable as ~storage:8000~ instead. Also note that it's not necessary to specify AWS credentials in the connection string, since those are passed as environment variables as specified in the service definition in ~docker-compose.yml~.
+
+To update the Datomic version, change ~transactor/Dockerfile~ and rebuild the image.
