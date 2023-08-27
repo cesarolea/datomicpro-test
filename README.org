@@ -1,0 +1,52 @@
+# -*- mode: org; coding: utf-8; eval: (visual-line-mode 1) -*-
+
+A sample project demonstrating how to configure and run a [[https://www.datomic.com/][Datomic Pro]] instance using local DynamoDB as storage. The storage, transactor and [[https://docs.datomic.com/pro/other-tools/console.html][Datomic Console]] are running in Docker containers, while the peer runs locally.
+
+* Motivation
+Now that [[https://blog.datomic.com/2023/04/datomic-is-free.html][Datomic is free]] and with the peer library published to maven, it's easier than ever to get started with Datomic Pro (what used to be called /on-prem/). The official Datomic documentation recommends using what is known as the "dev" storage protocol which is easier to get started with, but less similar to an actual production Datomic deployment. The goal of this sample project is to setup a working local development environment that is closer to an actual production Datomic deployment, using DynamoDB as storage provider.
+
+* Provisioning local storage
+
+#+begin_src sh
+docker-compose run --build transactor /opt/datomic-pro/bin/datomic ensure-transactor /opt/datomic-pro/config/dev-transactor.properties /opt/datomic-pro/config/dev-transactor.properties
+#+end_src
+
+It should output:
+
+#+begin_example
+{:success "/opt/datomic-pro/config/dev-transactor.properties"}
+#+end_example
+
+A DynamoDB table with the name ~datomicpro-test~ will be created in the local DynamoDB service
+
+* Connection string
+
+A connection string for a local DynamoDB provisioning storage looks like this:
+
+~datomic:ddb-local://localhost:8000/datomicpro-test/hello?aws_access_key_id=dummy&aws_secret_key=dummy~
+
+Let's dissect each part:
+
+- ~datomic:ddb-local~: A datomic system using DynamoDB local as storage. An AWS-backed DynamoDB would use ~datomic:ddb~ instead.
+- ~localhost:8000~: Where to reach DynamoDB local. It has to match your Docker configuration.
+- ~datomicpro-test~: The name of the DynamoDB table.
+- ~hello~: Name of the *Datomic* database to use or create. Replace with ~*~ when listing all databases.
+- ~?aws_access_key_id=dummy&aws_secret_key=dummy~: Dummy AWS credentials to use, needed when using DynamoDB local.
+
+* Datomic console
+
+Run the ~datomic-console~ container to run the console server:
+
+#+begin_src sh
+docker-compose up datomic-console
+#+end_src
+
+The output should be:
+
+#+begin_example
+datomic-console  | Console started on port: 9000
+datomic-console  |    dev = datomic:ddb-local://storage:8000/datomicpro-test/
+datomic-console  | Open http://localhost:9000/browse in your browser (Chrome recommended)
+#+end_example
+
+The datomic console should be available at ~http://localhost:9000/browse~.
