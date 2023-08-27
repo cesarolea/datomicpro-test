@@ -1,13 +1,4 @@
-{:paths ["src" "resources"]
- :deps {com.datomic/peer {:mvn/version "1.0.6735"}                    ;; peer library
-        com.amazonaws/aws-java-sdk-dynamodb {:mvn/version "1.12.506"} ;; dynamodb client
-        }
- :aliases
- {:test-paths ["test/integration" "test/unit"]
-  :repl {:extra-deps  {cider/cider-nrepl             {:mvn/version "0.30.0"}
-                       refactor-nrepl/refactor-nrepl {:mvn/version "3.6.0"}}
-         :main-opts   ["-m" "nrepl.cmdline" "--middleware"
-                       "[cider.nrepl/cider-middleware,refactor-nrepl.middleware/wrap-refactor]"]
-         :jvm-opts    ["-Dclojure.tools.logging.factory=clojure.tools.logging.impl/slf4j-factory"]
-                           ;; the path is required to be able to run tests from the repl
-         :extra-paths [:test-paths]}}}
+{:paths ["src"]
+ :deps
+ {com.datomic/peer {:mvn/version "1.0.6735"}
+  com.amazonaws/aws-java-sdk-dynamodb {:mvn/version "1.12.506"}}}
