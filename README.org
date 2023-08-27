@@ -9,7 +9,10 @@ Now that [[https://blog.datomic.com/2023/04/datomic-is-free.html][Datomic is fre
 Datomic needs to provision the storage provider so that it can be used by the transactor.
 
 #+begin_src sh
-docker-compose run transactor /opt/datomic-pro/bin/datomic ensure-transactor /opt/datomic-pro/config/dev-transactor.properties /opt/datomic-pro/config/dev-transactor.properties
+docker-compose run transactor /opt/datomic-pro/bin/datomic \
+               ensure-transactor \
+               /opt/datomic-pro/config/dev-transactor.properties \
+               /opt/datomic-pro/config/dev-transactor.properties
 #+end_src
 
 It should output:
@@ -21,7 +24,9 @@ It should output:
 A DynamoDB table with the name ~datomicpro-test~ will be created in the local DynamoDB service, which you can verify by running:
 
 #+begin_src sh
-AWS_ACCESS_KEY_ID=dummy AWS_SECRET_ACCESS_KEY=dummy aws dynamodb list-tables --endpoint-url http://localhost:8000
+AWS_ACCESS_KEY_ID=dummy AWS_SECRET_ACCESS_KEY=dummy \
+                        aws dynamodb list-tables \
+                        --endpoint-url http://localhost:8000
 #+end_src
 
 * Workflow
