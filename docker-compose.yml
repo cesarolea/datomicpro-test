@@ -24,6 +24,7 @@ services:
       - "4334:4334"
     volumes:
       - ./dev-transactor.properties:/opt/datomic-pro/config/dev-transactor.properties
+      - ./transactor_log:/opt/datomic-pro/log
     image: datomic-pro-base
     links:
       - storage
