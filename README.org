@@ -124,7 +124,7 @@ Connect to the running REPL and you're ready to use datomic. Alternatively you c
 ;; => #{["The Goonies" 1985 "action/adventure"] ["Commando" 1985 "future governor"]}
 
 (d/q all-data-from-1985 db)
-  ;; => #{["The Goonies" 1985 "action/adventure"] ["Commando" 1985 "action/adventure"]}
+;; => #{["The Goonies" 1985 "action/adventure"] ["Commando" 1985 "action/adventure"]}
 #+end_src
 
 ** Datomic Console
